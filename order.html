@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CafeTrack - Products</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  /* === General Reset === */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+  body { background-color: #f5f2ef; color: #3e2723; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* === Navbar === */
+  .navbar {
+    display: flex; align-items: center; justify-content: center;
+    background-color: #5d4037; color: white; padding: 15px 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.25); position: sticky; top:0; z-index:10;
+  }
+  .navbar h1 { font-size: 28px; font-weight:700; letter-spacing:1px; flex:1; text-align:center; }
+
+  /* === Tabs === */
+  .tabs {
+    display:flex; justify-content:center; align-items:center; gap:10px;
+    background-color:#fff; padding:12px 10px;
+    border-bottom:2px solid #d7ccc8; position:sticky; top:70px; z-index:9; flex-wrap:wrap;
+  }
+  .tabs button {
+    background-color:#d7ccc8; border:none; padding:10px 18px; border-radius:20px;
+    font-weight:500; color:#4e342e; cursor:pointer; transition: all 0.3s ease;
+  }
+  .tabs button:hover { background-color:#a1887f; color:#fff; }
+  .tabs .active { background-color:#6d4c41; color:#fff; transform:scale(1.05); }
+
+  /* === Cart Button === */
+  .cart-btn {
+    position:relative; background-color:#8d6e63; color:white; border:none;
+    padding:10px 16px; border-radius:20px; font-weight:500; cursor:pointer;
+    transition:0.3s; margin-left:5px;
+  }
+  .cart-btn:hover { background-color:#6d4c41; }
+  #cart-count {
+    background-color:#ffcc80; color:#3e2723; font-weight:bold;
+    border-radius:50%; padding:2px 8px; font-size:13px;
+    position:relative; top:-2px; left:4px;
+  }
+
+  /* === Product Grid === */
+  .products {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap:25px;
+    padding:25px;
+    flex:1;
+    max-width:1200px;
+    margin:0 auto;
+  }
+
+  /* === Product Card === */
+  .product-card {
+    background-color:#fff;
+    border-radius:15px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    text-align:center;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    height: 320px; /* fixed height for uniformity */
+    overflow:hidden;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.18);
+    background-color: #fffaf4;
+  }
+
+  .product-card img {
+    width:100%;
+    height:140px;
+    object-fit:contain;
+    border-radius:10px;
+    margin-bottom:10px;
+    background-color:#f0f0f0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .product-card img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+
+  .product-card h3 { font-size:17px; color:#4e342e; margin-bottom:5px; }
+  .product-card p { font-size:14px; color:#6d4c41; margin-bottom:5px; }
+  .stock { font-size:13px; font-weight:500; color:#5d4037; margin-bottom:10px; }
+  .out-of-stock { color:#b71c1c; font-weight:600; }
+
+  .product-card button {
+    background-color:#6d4c41; color:#fff; border:none;
+    padding:8px 14px; border-radius:12px; font-size:14px;
+    cursor:pointer; transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top:auto;
+  }
+  .product-card button:hover:not(:disabled) { background-color:#8d6e63; transform: scale(1.05); }
+  .product-card button:disabled { background-color:#d7ccc8; cursor:not-allowed; color:#888; }
+
+  /* === Responsive === */
+  @media(max-width:768px){ .products{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:500px){ .products{grid-template-columns:1fr;} .navbar h1{font-size:24px;} }
+</style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>CafeTrack</h1>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="active" onclick="showCategory('coffee', event)">Coffee</button>
+    <button onclick="showCategory('milktea', event)">Milk Tea</button>
+    <button onclick="showCategory('fruittea', event)">Fruit Tea</button>
+    <button class="cart-btn" onclick="goToCheckout()">🛒 <span id="cart-count">0</span></button>
+  </div>
+
+  <!-- Products -->
+  <div class="products" id="product-list"></div>
+
+<script>
+let inventory = JSON.parse(localStorage.getItem("inventoryData")) || [];
+let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+function buildProducts(){
+  let prod = { coffee:[], milktea:[], fruittea:[] };
+  inventory.forEach(item=>{ if(prod[item.category]) prod[item.category].push({...item}); });
+  return prod;
+}
+let products = buildProducts();
+
+function showCategory(category,event){
+  if(event){
+    document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+    event.target.classList.add("active");
+  }
+  const list = document.getElementById("product-list");
+  list.innerHTML = "";
+  if(!products[category] || products[category].length===0){
+    list.innerHTML = `<p style="text-align:center;width:100%;color:#7b6159;">No products available.</p>`;
+    return;
+  }
+  products[category].forEach((p,index)=>{
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <img src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+      <h3>${p.name}</h3>
+      <p>₱${p.price.toFixed(2)}</p>
+      <p class="stock ${p.stock===0?'out-of-stock':''}">${p.stock>0?`Available: ${p.stock}`:'Out of Stock'}</p>
+      <button onclick="addToCart('${category}',${index})" ${p.stock===0?'disabled':''}>${p.stock>0?'Add to Cart':'Out of Stock'}</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function addToCart(category,index){
+  const item = products[category][index];
+  if(item.stock>0){
+    item.stock--;
+    cart.push({ name:item.name, price:item.price, category });
+    localStorage.setItem("cartItems",JSON.stringify(cart));
+    updateInventoryFromProducts();
+    document.getElementById("cart-count").innerText = cart.length;
+    showCategory(category);
+  } else alert(`${item.name} is out of stock!`);
+}
+
+function updateInventoryFromProducts(){
+  inventory.forEach(inv=>{
+    const cat = inv.category;
+    const prodIndex = products[cat].findIndex(p=>p.name===inv.name);
+    if(prodIndex>=0) inv.stock = products[cat][prodIndex].stock;
+  });
+  localStorage.setItem("inventoryData",JSON.stringify(inventory));
+}
+
+function goToCheckout(){
+  if(cart.length===0){ alert("Your cart is empty!"); return; }
+  window.location.href = "checkout.php";
+}
+
+window.addEventListener("storage", e=>{
+  if(e.key==="inventoryData"){ 
+    inventory=JSON.parse(e.newValue); 
+    products=buildProducts(); 
+    showCategory(document.querySelector(".tabs .active").innerText.toLowerCase()); 
+  }
+  if(e.key==="cartItems"){ 
+    cart=JSON.parse(e.newValue); 
+    document.getElementById("cart-count").innerText = cart.length; 
+  }
+});
+
+window.onload = ()=>{
+  document.getElementById("cart-count").innerText = cart.length;
+  products = buildProducts();
+  showCategory('coffee');
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", "Segoe UI", sans-serif; }
+  body { background: #f8f3ec; color: #3e2723; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* Navbar */
+  .navbar { background: linear-gradient(90deg, #5d4037, #3e2723); color: #fff; text-align: center; padding: 15px 0; font-size: 1.6rem; font-weight: bold; letter-spacing: 1px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
+
+  /* Layout */
+  .container { display: flex; flex: 1; min-height: calc(100vh - 60px); }
+
+  /* Sidebar */
+  .sidebar { width: 240px; background: #6f4e37; color: #fff; padding: 25px 0; box-shadow: 3px 0 10px rgba(0,0,0,0.2); }
+  .sidebar ul { list-style: none; }
+  .sidebar li { margin: 8px 0; }
+  .sidebar a { display: block; padding: 12px 25px; color: #fff; text-decoration: none; font-weight: 500; transition: 0.3s ease; border-left: 4px solid transparent; border-radius: 0 10px 10px 0; }
+  .sidebar a.active, .sidebar a:hover { background: #d7b899; color: #3e2723; border-left: 4px solid #3e2723; }
+
+  /* Main Content */
+  .main-content { flex: 1; padding: 40px; }
+  .main-content h2 { color: #4b2e05; font-size: 1.9rem; margin-bottom: 6px; }
+  .report-date { font-size: 0.95rem; color: #795548; margin-bottom: 25px; }
+
+  /* Summary Cards */
+  .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+  .card { flex: 1; min-width: 220px; background: linear-gradient(145deg, #fff, #f3e9e3); padding: 25px; border-radius: 12px; box-shadow: 0 5px 12px rgba(0,0,0,0.15); text-align: center; transition: all 0.3s ease; }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+  .card h3 { color: #5d4037; font-size: 1.8rem; margin-bottom: 8px; }
+  .card p { color: #6d4c41; font-size: 1rem; font-weight: 500; }
+
+  /* Report Grid */
+  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 25px; }
+
+  .table-card, .chart-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+  .table-card:hover, .chart-card:hover { transform: scale(1.02); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e0d7d2; }
+  th { background: #efebe9; color: #4e342e; font-weight: bold; }
+  tr:hover td { background: #fff8f3; }
+
+  canvas { width: 100% !important; height: 300px !important; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { flex-direction: column; }
+    .sidebar { width: 100%; text-align: center; }
+    .main-content { padding: 25px; }
+    .summary { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar">CafeTrack Reports</header>
+
+<div class="container">
+  <aside class="sidebar">
+    <ul>
+      <li><a href="#" class="active">☕ Daily Sales Report</a></li>
+      <li><a href="#">📅 Monthly Sales Report</a></li>
+      <li><a href="#">🗓️ Weekly Sales Report</a></li>
+      <li><a href="#">📦 Inventory Report</a></li>
+      <li><a href="#">📈 Forecast Report</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <!-- Content loaded dynamically by JS -->
+  </main>
+</div>
+
+<script>
+const mainContent = document.querySelector('.main-content');
+const reportDate = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// Sidebar functionality
+document.querySelectorAll('.sidebar a').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const reportType = e.target.textContent.trim();
+    switch(reportType) {
+      case '☕ Daily Sales Report': loadDailyReport(); break;
+      case '📅 Monthly Sales Report': loadMonthlyReport(); break;
+      case '🗓️ Weekly Sales Report': loadWeeklyReport(); break;
+      case '📦 Inventory Report': loadInventoryReport(); break;
+      case '📈 Forecast Report': loadForecastReport(); break;
+    }
+  });
+});
+
+// Load reports dynamically
+function loadDailyReport() {
+  mainContent.innerHTML = `
+    <h2>☕ Daily Sales Report</h2>
+    <p class="report-date">Date: ${reportDate}</p>
+    <div class="summary">
+      <div class="card"><h3>₱1,200</h3><p>Total Sales Today</p></div>
+      <div class="card"><h3>45</h3><p>Total Orders</p></div>
+      <div class="card"><h3>₱27</h3><p>Average Order</p></div>
+    </div>
+    <div class="chart-card"><canvas id="dailyChart"></canvas></div>
+  `;
+  setTimeout(() => renderBarChart('dailyChart', ['Coffee','Pastries','Drinks'], [30,10,5]), 50);
+}
+
+function loadMonthlyReport() {
+  mainContent.innerHTML = `
+    <h2>📅 Monthly Sales Report</h2>
+    <p class="report-date">Month: October 2025</p>
+    <div class="summary">
+      <div class="card"><h3>₱30,000</h3><p>Total Sales</p></div>
+      <div class="card"><h3>1,200</h3><p>Total Orders</p></div>
+      <div class="card"><h3>₱25</h3><p>Average Order</p></div>
+    </div>
+    <div class="chart-card"><canvas id="monthlyChart"></canvas></div>
+  `;
+  setTimeout(() => renderLineChart('monthlyChart', ['Week 1','Week 2','Week 3','Week 4'], [5000,7000,8000,10000]), 50);
+}
+
+function loadWeeklyReport() {
+  mainContent.innerHTML = `
+    <h2>🗓️ Weekly Sales Report</h2>
+    <p class="report-date">Week of October 1–7, 2025</p>
+    <div class="summary">
+      <div class="card"><h3>₱8,000</h3><p>Total Sales</p></div>
+      <div class="card"><h3>320</h3><p>Total Orders</p></div>
+      <div class="card"><h3>₱25</h3><p>Average Order</p></div>
+    </div>
+    <div class="chart-card"><canvas id="weeklyChart"></canvas></div>
+  `;
+  setTimeout(() => renderBarChart('weeklyChart', ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], [800,1200,1000,1300,1500,900,1300]), 50);
+}
+
+function loadInventoryReport() {
+  mainContent.innerHTML = `
+    <h2>📦 Inventory Report</h2>
+    <p class="report-date">As of ${reportDate}</p>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Item</th><th>Stock</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Arabica Beans</td><td>45</td><td>✅ Sufficient</td></tr>
+          <tr><td>Milk</td><td>10</td><td>⚠️ Low</td></tr>
+          <tr><td>Sugar</td><td>75</td><td>✅ Sufficient</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function loadForecastReport() {
+  mainContent.innerHTML = `
+    <h2>📈 Forecast Report</h2>
+    <p class="report-date">Projected for November 2025</p>
+    <div class="chart-card"><canvas id="forecastChart"></canvas></div>
+  `;
+  setTimeout(() => renderLineChart('forecastChart', ['Week 1','Week 2','Week 3','Week 4'], [6000,7500,9000,11000]), 50);
+}
+
+// Chart functions
+function renderBarChart(id, labels, data) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets:[{ data, backgroundColor: ['#6f4e37','#caa472','#d7b899','#b89b72'], borderRadius: 6 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+}
+
+function renderLineChart(id, labels, data) {
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels, datasets:[{ data, borderColor:'#6f4e37', backgroundColor:'rgba(111,78,55,0.2)', fill:true, tension:0.3 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+}
+
+// Load default report
+loadDailyReport();
+</script>
+
+</body>
+</html>

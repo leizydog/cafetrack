@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  /* === General Reset === */
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; transition: all 0.3s ease; }
+
+  body {
+    background-color: #f5f2ef;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === Navbar === */
+  .navbar {
+    background-color: #3e2723;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .navbar h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+
+  .nav-links a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: transparent;
+  }
+
+  .nav-links a:hover {
+    background-color: #5d4037;
+    transform: scale(1.05);
+  }
+
+  /* === Dashboard === */
+  .dashboard {
+    text-align: center;
+    padding: 60px 20px;
+    flex: 1;
+    background: linear-gradient(to bottom, #f5f2ef, #fffdf9);
+  }
+
+  .dashboard h2 {
+    color: #3e2723;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 50px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .card {
+    background-color: #fff;
+    padding: 40px 25px;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    transform: translateY(0);
+    transition: all 0.4s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    border-color: #e6b17e;
+    background-color: #fffaf4;
+  }
+
+  .card i {
+    font-size: 50px;
+    color: #3e2723;
+    margin-bottom: 18px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+
+  .card:hover i {
+    color: #d49a6a;
+    transform: scale(1.2);
+  }
+
+  .card p {
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* === Modal === */
+  .modal-overlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  .modal {
+    background: #fff;
+    padding: 35px 30px;
+    border-radius: 18px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    transform: scale(0.8);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay.show .modal {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .modal h3 { color: #3e2723; margin-bottom: 20px; font-size: 22px; }
+  .modal p { margin-bottom: 30px; color: #555; font-size: 16px; }
+
+  .modal button {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .modal .cancel-btn { background: #ccc; color: #333; }
+  .modal .cancel-btn:hover { background: #bbb; }
+
+  .modal .logout-btn { background: #d9534f; color: #fff; }
+  .modal .logout-btn:hover { background: #c9302c; }
+
+  footer { background-color: #3e2723; color: #fff; text-align: center; padding: 15px; font-size: 14px; margin-top: auto; }
+
+  @media (max-width:768px) {
+    .navbar h1 { font-size: 24px; }
+    .cards { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .card { padding: 35px 20px; }
+  }
+
+  @media (max-width:500px) {
+    .cards { grid-template-columns: 1fr; }
+    .dashboard h2 { font-size: 28px; }
+    .navbar { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <h1>CafeTrack</h1>
+  <div class="nav-links">
+    <a onclick="showLogoutModal()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard">
+  <h2>Dashboard</h2>
+    <div class="cards">
+    <div class="card" onclick="location.href='order.php'"><i class="fas fa-mug-hot"></i><p>Order</p></div>
+    <div class="card" onclick="location.href='cash_drawer.php'"><i class="fas fa-cash-register"></i><p>Cash Drawer</p></div>
+    <div class="card" onclick="location.href='inventory.php'"><i class="fas fa-clipboard-list"></i><p>Inventory</p></div>
+    <div class="card" onclick="location.href='report.php'"><i class="fas fa-file-alt"></i><p>Report</p></div>
+    <div class="card" onclick="location.href='forecasting.php'"><i class="fas fa-chart-line"></i><p>Forecast</p></div>
+  </div>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal">
+    <h3>Confirm Logout</h3>
+    <p>Are you sure you want to log out?</p>
+    <button class="cancel-btn" onclick="hideLogoutModal()">Cancel</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<script>
+  // Prevent back navigation
+  history.pushState(null, document.title, location.href);
+  window.addEventListener('popstate', function (event) {
+    history.pushState(null, document.title, location.href);
+  });
+
+  function showLogoutModal() {
+    document.getElementById('logoutModal').classList.add('show');
+  }
+
+  function hideLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('show');
+  }
+
+    function logout() {
+    localStorage.removeItem("staffUsername");
+    localStorage.removeItem("staffPassword");
+    window.location.href = 'login.php';
+  }
+</script>
+
+</body>
+</html>

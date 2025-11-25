@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Staff Login</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", sans-serif; }
+
+  body {
+    background-color: #f9f4ee;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+  }
+
+  @keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+
+  /* Navbar */
+  .navbar {
+    width: 100%;
+    background-color: #4b2e05;
+    color: #fff;
+    padding: 15px 30px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    margin-bottom: 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar h1 { font-size: 24px; font-weight: 600; }
+
+  /* Auth Container */
+  .auth-container {
+    background-color: #fff;
+    padding: 40px 50px;
+    border-radius: 16px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  .auth-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+  .auth-container h2 { color: #4b2e05; font-size: 26px; margin-bottom: 25px; }
+
+  label { display:block; text-align:left; margin-bottom:8px; font-size:15px; color:#6f4e37; font-weight:500; }
+  input {
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:15px;
+    transition: 0.3s ease;
+  }
+  input:focus {
+    border-color:#caa472;
+    outline:none;
+    box-shadow: 0 0 5px #caa472;
+  }
+
+  /* Password Container */
+  .password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .password-container input { flex:1; padding-right: 60px; }
+  .toggle-pass {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #8b5e3c;
+    font-weight: 600;
+    transition: 0.3s;
+    padding: 0;
+  }
+  .toggle-pass:hover { color: #4b2e05; }
+
+  /* Buttons */
+  button[type="submit"],
+  #switch-user {
+    width:100%;
+    padding:12px 0;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:500;
+    cursor:pointer;
+    transition:0.3s ease;
+    margin-top: 5px;
+  }
+  button[type="submit"] { background-color:#caa472; color:#fff; }
+  button[type="submit"]:hover { background-color:#b38b5a; transform: translateY(-2px); }
+  #switch-user { background-color:#8b5e3c; color:#fff; }
+  #switch-user:hover { background-color:#704729; }
+
+  #login-message { margin-top:10px; font-size:14px; min-height:18px; font-weight:500; }
+
+  /* Logout Modal */
+  .modal-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5); display: none; justify-content:center; align-items:center; z-index:999;
+  }
+  .modal {
+    background: #fff; padding: 30px 25px; border-radius: 15px;
+    max-width: 400px; width: 90%; text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+  }
+  .modal h3 { color: #4b2e05; margin-bottom: 20px; }
+  .modal p { margin-bottom: 25px; color: #555; font-size: 16px; }
+  .modal button {
+    padding: 10px 25px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 0 10px; transition: 0.3s;
+  }
+  .modal .cancel-btn { background: #ccc; color: #333; }
+  .modal .cancel-btn:hover { background: #bbb; }
+  .modal .logout-btn { background: #d9534f; color: #fff; }
+  .modal .logout-btn:hover { background: #c9302c; }
+
+  /* Responsive */
+  @media(max-width:480px){
+    .auth-container { padding: 30px 25px; }
+    .auth-container h2 { font-size:22px; }
+    button { font-size:15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <h1>CafeTrack</h1>
+  <div style="position:absolute; top:15px; right:30px;">
+    <a style="color:#fff; cursor:pointer;" onclick="showLogoutModal()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+  </div>
+</div>
+
+<div class="auth-container">
+  <h2>Staff Login</h2>
+  
+  <form onsubmit="return loginStaff()">
+    <label id="username-label">Username</label>
+    <input type="text" id="staff-username" readonly>
+
+    <label>Password</label>
+    <div class="password-container">
+      <input type="password" id="staff-password" placeholder="Enter password" required>
+      <button type="button" class="toggle-pass" onclick="togglePassword()">Show</button>
+    </div>
+
+    <button type="submit">Log In</button>
+    <button type="button" id="switch-user" style="display:none;" onclick="switchUser()">Switch User</button>
+  </form>
+  <p id="login-message"></p>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal">
+    <h3>Confirm Logout</h3>
+    <p>Are you sure you want to log out?</p>
+    <button class="cancel-btn" onclick="hideLogoutModal()">Cancel</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<script>
+window.onload = function() {
+  const savedUsername = localStorage.getItem("staffUsername");
+  if(savedUsername){
+    document.getElementById("staff-username").value = savedUsername;
+    document.getElementById("username-label").textContent = "Username (saved)";
+    document.getElementById("switch-user").style.display = "inline-block";
+  } else {
+    document.getElementById("staff-username").removeAttribute("readonly");
+    document.getElementById("staff-username").placeholder = "Enter username";
+  }
+};
+
+function togglePassword() {
+  const passInput = document.getElementById("staff-password");
+  const btn = document.querySelector(".toggle-pass");
+  if(passInput.type === "password"){ passInput.type = "text"; btn.textContent = "Hide"; }
+  else{ passInput.type = "password"; btn.textContent = "Show"; }
+}
+
+function loginStaff() {
+  const username = document.getElementById("staff-username").value.trim();
+  const password = document.getElementById("staff-password").value.trim();
+  const message = document.getElementById("login-message");
+
+  const savedUsername = localStorage.getItem("staffUsername");
+  const savedPassword = localStorage.getItem("staffPassword");
+
+  if(username === savedUsername && password === savedPassword){
+    message.style.color = "green";
+    message.textContent = `✅ Welcome back, ${username}! Redirecting...`;
+  setTimeout(()=>{ window.location.href = "dashboard.php"; }, 1200);
+  } else {
+    message.style.color = "red";
+    message.textContent = "⚠️ Invalid credentials. Try again.";
+  }
+  return false;
+}
+
+function switchUser(){
+  localStorage.removeItem("staffUsername");
+  localStorage.removeItem("staffPassword");
+  const usernameField = document.getElementById("staff-username");
+  usernameField.removeAttribute("readonly");
+  usernameField.value = "";
+  usernameField.placeholder = "Enter username";
+  document.getElementById("username-label").textContent = "Username";
+  document.getElementById("switch-user").style.display = "none";
+  document.getElementById("login-message").textContent = "";
+}
+
+// Logout Modal
+function showLogoutModal(){ document.getElementById('logoutModal').style.display='flex'; }
+function hideLogoutModal(){ document.getElementById('logoutModal').style.display='none'; }
+  function logout(){
+  localStorage.removeItem("staffUsername");
+  localStorage.removeItem("staffPassword");
+  window.location.href='login.php';
+}
+</script>
+
+</body>
+</html>

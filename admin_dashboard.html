@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CafeTrack - Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    /* === General Reset === */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+    body {
+      background-color: #f5f2ef;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* === Navbar === */
+    .navbar {
+      background-color: #3e2723;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 25px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar h1 { font-size: 26px; font-weight: bold; letter-spacing: 1px; }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.3s, transform 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-links a:hover { background-color: #5d4037; transform: scale(1.05); }
+
+    /* === Dashboard Section === */
+    .dashboard { text-align: center; padding: 50px 20px; flex: 1; background: linear-gradient(to bottom, #f5f2ef, #fffdf9); }
+
+    .dashboard h2 { color: #3e2723; font-size: 32px; font-weight: 700; margin-bottom: 40px; letter-spacing: 1px; }
+
+    /* === Stats Cards === */
+    .stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; margin-bottom: 50px; }
+    .stat-card {
+      background-color: #fff; padding: 30px; border-radius: 15px; width: 260px;
+      border-left: 6px solid #d49a6a; box-shadow: 0 6px 18px rgba(0,0,0,0.12); transition: all 0.3s ease;
+    }
+    .stat-card:hover { transform: translateY(-6px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .stat-card i { font-size: 36px; color: #3e2723; margin-bottom: 12px; }
+    .stat-card h3 { font-size: 16px; color: #555; margin-bottom: 6px; }
+    .stat-card p { font-size: 24px; font-weight: 700; color: #3e2723; }
+
+    /* === Navigation Cards === */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto; }
+    .card {
+      background-color: #fff; padding: 35px 25px; border-radius: 15px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12); transition: all 0.3s ease; cursor: pointer;
+      border: 1px solid transparent; text-align: center;
+    }
+    .card:hover { transform: translateY(-8px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-color: #d49a6a; background-color: #fff8f2; }
+    .card i { font-size: 48px; color: #3e2723; margin-bottom: 18px; transition: color 0.3s, transform 0.3s; }
+    .card:hover i { color: #d49a6a; transform: scale(1.15); }
+    .card p { font-size: 18px; font-weight: 600; color: #333; letter-spacing: 0.5px; }
+
+    /* === Logout Modal === */
+    .modal-overlay {
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 999;
+    }
+    .modal {
+      background: #fff; padding: 30px 25px; border-radius: 15px;
+      max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: fadeIn 0.3s ease;
+    }
+    .modal h3 { color: #3e2723; margin-bottom: 20px; }
+    .modal p { margin-bottom: 25px; color: #555; font-size: 16px; }
+    .modal button {
+      padding: 10px 25px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 0 10px; transition: 0.3s;
+    }
+    .modal .cancel-btn { background: #ccc; color: #333; }
+    .modal .cancel-btn:hover { background: #bbb; }
+    .modal .logout-btn { background: #d9534f; color: #fff; }
+    .modal .logout-btn:hover { background: #c9302c; }
+    @keyframes fadeIn { from {opacity:0; transform: scale(0.8);} to {opacity:1; transform: scale(1);} }
+
+    /* === Footer === */
+    footer { background-color: #3e2723; color: white; text-align: center; padding: 15px; font-size: 14px; }
+
+    /* === Responsive === */
+    @media (max-width:768px) {
+      .navbar h1 { font-size: 22px; }
+      .stats { flex-direction: column; align-items: center; }
+      .cards { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+      .card { padding: 30px 20px; }
+    }
+    @media (max-width:500px) {
+      .cards { grid-template-columns: 1fr; }
+      .dashboard h2 { font-size: 26px; }
+      .navbar { flex-direction: column; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>CafeTrack</h1>
+    <div class="nav-links">
+      <a onclick="showLogoutModal()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Stats Section -->
+    <div class="stats">
+      <div class="stat-card">
+        <i class="fas fa-peso-sign"></i>
+        <h3>Total Sales (Today)</h3>
+        <p>₱4,520</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clock"></i>
+        <h3>Pending Orders</h3>
+        <p>12</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-box"></i>
+        <h3>Low Stock Items</h3>
+        <p>5</p>
+      </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="cards">
+  <div class="card" onclick="navigateTo('cash_drawer.php')">
+        <i class="fas fa-cash-register"></i>
+        <p>Cash Drawer</p>
+      </div>
+  <div class="card" onclick="navigateTo('report.php')">
+        <i class="fas fa-file-alt"></i>
+        <p>Reports</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal">
+      <h3>Confirm Logout</h3>
+      <p>Are you sure you want to log out?</p>
+      <button class="cancel-btn" onclick="hideLogoutModal()">Cancel</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    function showLogoutModal() { document.getElementById('logoutModal').style.display = 'flex'; }
+    function hideLogoutModal() { document.getElementById('logoutModal').style.display = 'none'; }
+    function logout() {
+      localStorage.removeItem("staffEmail");
+      localStorage.removeItem("staffPassword");
+      window.location.href = 'login.php';
+    }
+    function navigateTo(url) { window.location.href = url; }
+  </script>
+</body>
+</html>

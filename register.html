@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Register</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; font-family:"Poppins", sans-serif; }
+
+  body {
+    background-color: #f8f3ef;
+    color: #3e2723;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* Navbar */
+  .navbar {
+    width: 100%;
+    background-color: #5d4037;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-bottom: 40px;
+  }
+  .navbar h1 { font-size: 28px; letter-spacing: 1px; font-weight: 600; }
+
+  /* Auth Container */
+  .auth-container {
+    background-color: #ffffff;
+    padding: 35px 40px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .auth-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  .auth-container h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #4e342e;
+  }
+
+  form { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+  label { text-align: left; font-weight: 500; color: #5d4037; }
+
+  input {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: 0.3s;
+  }
+  input:focus {
+    border-color: #8d6e63;
+    outline: none;
+    box-shadow: 0 0 6px rgba(141,110,99,0.3);
+  }
+
+  .password-container {
+    position: relative;
+  }
+  .toggle-pass {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #8d6e63;
+  }
+
+  button {
+    background-color: #6d4c41;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: 0.3s;
+  }
+  button:hover { background-color: #8d6e63; transform: scale(1.03); }
+
+  p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4e342e;
+  }
+  a { color: #6d4c41; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  #register-message {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 18px;
+  }
+
+  /* Responsive */
+  @media(max-width: 480px){
+    .auth-container { padding: 25px 20px; }
+    .navbar h1 { font-size: 24px; }
+    input, button { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <h1>CafeTrack</h1>
+</div>
+
+<!-- Register Container -->
+<div class="auth-container">
+  <h2>Create an Account</h2>
+  <form onsubmit="return registerUser()">
+    <label for="reg-username">Username</label>
+    <input type="text" id="reg-username" placeholder="Enter username" required>
+
+    <label for="reg-email">Email</label>
+    <input type="email" id="reg-email" placeholder="Enter email" required>
+
+    <label for="reg-password">Password</label>
+    <div class="password-container">
+      <input type="password" id="reg-password" placeholder="Enter password" required>
+      <button type="button" class="toggle-pass" onclick="togglePassword()">Show</button>
+    </div>
+
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <p>Already have an account? <a href="login.php">Login</a></p>
+  <p id="register-message"></p>
+</div>
+
+<script>
+function registerUser() {
+  const username = document.getElementById("reg-username").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value.trim();
+  const message = document.getElementById("register-message");
+
+  if (username && email && password) {
+    localStorage.setItem("staffUsername", username);
+    localStorage.setItem("staffEmail", email);
+    localStorage.setItem("staffPassword", password);
+
+    message.style.color = "green";
+    message.textContent = "✅ Account created successfully! Redirecting to login...";
+
+  setTimeout(() => { window.location.href = "login.php"; }, 1500);
+  } else {
+    message.style.color = "red";
+    message.textContent = "⚠️ Please fill out all fields.";
+  }
+  return false; // prevent reload
+}
+
+function togglePassword() {
+  const passInput = document.getElementById("reg-password");
+  const btn = document.querySelector(".toggle-pass");
+  if (passInput.type === "password") {
+    passInput.type = "text";
+    btn.textContent = "Hide";
+  } else {
+    passInput.type = "password";
+    btn.textContent = "Show";
+  }
+}
+</script>
+
+</body>
+</html>

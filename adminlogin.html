@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Admin Login</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
+
+  body {
+    background-color: #f9f4ee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  /* Navbar */
+  .navbar {
+    width: 100%;
+    background-color: #4b2e05;
+    color: #fff;
+    padding: 15px 30px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .navbar h1 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  /* Container */
+  .auth-container {
+    background-color: #fff;
+    margin-top: 80px;
+    padding: 40px 50px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+  }
+
+  .auth-container h2 {
+    color: #4b2e05;
+    font-size: 26px;
+    margin-bottom: 25px;
+  }
+
+  /* PIN input boxes */
+  .pin-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .pin-inputs input {
+    width: 45px;
+    height: 55px;
+    text-align: center;
+    font-size: 24px;
+    border: 2px solid #caa472;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.3s;
+  }
+
+  .pin-inputs input:focus {
+    border-color: #8b5e3c;
+    box-shadow: 0 0 8px #d6b48a;
+  }
+
+  /* Button */
+  .login-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-radius: 10px;
+    background-color: #caa472;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .login-btn:hover {
+    background-color: #b38b5a;
+    transform: translateY(-2px);
+  }
+
+  /* Message */
+  #login-message {
+    margin-top: 15px;
+    font-size: 14px;
+    min-height: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <h1>CafeTrack</h1>
+</div>
+
+<div class="auth-container">
+  <h2>Admin</h2>
+  <div class="pin-inputs">
+    <input type="password" maxlength="1" id="pin1" oninput="moveNext(1)">
+    <input type="password" maxlength="1" id="pin2" oninput="moveNext(2)">
+    <input type="password" maxlength="1" id="pin3" oninput="moveNext(3)">
+    <input type="password" maxlength="1" id="pin4" oninput="moveNext(4)">
+  </div>
+  <button class="login-btn" onclick="checkPIN()">Confirm</button>
+  <p id="login-message"></p>
+</div>
+
+<script>
+const correctPIN = "1234"; // Change this to your real admin PIN
+
+function moveNext(current) {
+  const currentInput = document.getElementById(`pin${current}`);
+  if (currentInput.value.length === 1 && current < 4) {
+    document.getElementById(`pin${current + 1}`).focus();
+  }
+}
+
+function checkPIN() {
+  const pin =
+    document.getElementById("pin1").value +
+    document.getElementById("pin2").value +
+    document.getElementById("pin3").value +
+    document.getElementById("pin4").value;
+
+  const message = document.getElementById("login-message");
+
+  if (pin === correctPIN) {
+    message.style.color = "green";
+    message.textContent = "✅ Access Granted. Redirecting...";
+    setTimeout(() => {
+      window.location.href = "admin_dashboard.php"; // change destination
+    }, 1000);
+  } else {
+    message.style.color = "red";
+    message.textContent = "❌ Incorrect PIN. Try again.";
+    document.querySelectorAll(".pin-inputs input").forEach((input) => (input.value = ""));
+    document.getElementById("pin1").focus();
+  }
+}
+</script>
+
+</body>
+</html>

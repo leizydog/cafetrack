@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout - CafeTrack</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f8f3ef;
+    color: #3e2723;
+    margin: 0;
+    padding: 0;
+    transition: background 0.4s ease;
+  }
+
+  .navbar {
+    background-color: #5d4037;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 24px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 750px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 15px;
+    padding: 30px 25px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    animation: fadeIn 0.6s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #4e342e;
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th { background-color: #d7ccc8; color: #3e2723; }
+  td { text-align: left; vertical-align: middle; }
+  td.price, td.total { text-align: right; }
+
+  tr:hover td { background-color: #f3e5f5; }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .quantity-controls button {
+    background-color: #6d4c41;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s ease;
+  }
+  .quantity-controls button:hover { background-color: #8d6e63; }
+
+  .total {
+    text-align: right;
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 10px;
+    color: #4e342e;
+  }
+
+  .btn {
+    background-color: #6d4c41;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    display: block;
+    margin: 25px auto 0;
+    transition: 0.3s ease;
+    font-weight: 500;
+  }
+
+  .btn:hover { background-color: #8d6e63; transform: scale(1.03); }
+
+  /* ===== Modal ===== */
+  .modal {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.3s ease;
+  }
+
+  .modal.show { visibility: visible; opacity: 1; }
+
+  .modal-content {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    animation: popIn 0.4s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-content h3 { color: #4e342e; margin-bottom: 10px; }
+  .modal-content p { color: #6d4c41; font-size: 15px; }
+  .ok-btn {
+    background-color: #6d4c41;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 500;
+  }
+  .ok-btn:hover { background-color: #8d6e63; }
+</style>
+</head>
+<body>
+  <div class="navbar">CafeTrack Checkout</div>
+
+  <div class="container">
+    <h2>Order Summary</h2>
+    <table id="checkout-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Quantity</th>
+          <th class="price">Price (₱)</th>
+          <th class="price">Total (₱)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="total" id="total-amount">Total: ₱0.00</p>
+    <button class="btn" onclick="completeOrder()">Complete Order</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-content">
+      <h3>✅ Order Completed!</h3>
+      <p>Your order has been placed successfully. Redirecting to dashboard...</p>
+      <button class="ok-btn" onclick="redirectHome()">OK</button>
+    </div>
+  </div>
+
+<script>
+let inventory = JSON.parse(localStorage.getItem("inventoryData")) || [];
+let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+function renderTable() {
+  const tbody = document.querySelector("#checkout-table tbody");
+  tbody.innerHTML = '';
+  let total = 0;
+
+  cartItems.forEach((item, index) => {
+    const stockItem = inventory.find(inv => inv.name === item.name && inv.category === item.category);
+    const maxQty = stockItem ? stockItem.stock : 1;
+    if(!item.quantity) item.quantity = 1;
+    if(item.quantity > maxQty) item.quantity = maxQty;
+
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td class="quantity-controls">
+        <button onclick="changeQty(${index}, -1)">-</button>
+        <span>${item.quantity}</span>
+        <button onclick="changeQty(${index}, 1)">+</button>
+        <small style="margin-left:5px;color:#6d4c41;">(Stock: ${maxQty})</small>
+      </td>
+      <td class="price">₱${item.price.toFixed(2)}</td>
+      <td class="price">${itemTotal.toFixed(2)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("total-amount").textContent = `Total: ₱${total.toFixed(2)}`;
+  localStorage.setItem("cartItems", JSON.stringify(cartItems));
+}
+
+function changeQty(index, delta) {
+  const item = cartItems[index];
+  const stockItem = inventory.find(inv => inv.name === item.name && inv.category === item.category);
+  const maxQty = stockItem ? stockItem.stock : 1;
+  item.quantity = (item.quantity || 1) + delta;
+  if(item.quantity < 1) item.quantity = 1;
+  if(item.quantity > maxQty) item.quantity = maxQty;
+  renderTable();
+}
+
+function completeOrder() {
+  if(cartItems.length === 0) {
+    alert("Your cart is empty!");
+    return;
+  }
+
+  // Update inventory stock
+  cartItems.forEach(item => {
+    const stockItem = inventory.find(inv => inv.name === item.name && inv.category === item.category);
+    if(stockItem) stockItem.stock -= item.quantity;
+    if(stockItem.stock < 0) stockItem.stock = 0;
+  });
+  localStorage.setItem("inventoryData", JSON.stringify(inventory));
+  localStorage.removeItem("cartItems");
+
+  const modal = document.getElementById("successModal");
+  modal.classList.add("show");
+  setTimeout(() => window.location.href="dashboard.php", 3000);
+}
+
+function redirectHome() { window.location.href = "dashboard.php"; }
+
+window.onload = () => { renderTable(); };
+</script>
+</body>
+</html>

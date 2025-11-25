@@ -1,0 +1,200 @@
+<?php
+// Use centralized auth helper which already starts sessions and uses the PDO db helper
+require_once __DIR__ . '/includes/auth.php';
+
+$login_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = filter_input(INPUT_POST, 'user-email', FILTER_SANITIZE_EMAIL) ?? '';
+    $password = $_POST['user-pass'] ?? '';
+
+    // Delegate to the auth helper which returns a structured response
+    $res = login_user($email, $password);
+    if ($res['success']) {
+        // login_user set the session; redirect to welcome
+        header('Location: welcome.php');
+        exit();
+    }
+    $login_message = $res['message'] ?? 'Invalid credentials';
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Login</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; font-family:"Poppins", sans-serif; }
+
+  body {
+    background-color: #f8f3ef;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .navbar {
+    width: 100%;
+    background-color: #5d4037;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    margin-bottom: 40px;
+  }
+  .navbar h1 { font-size: 26px; letter-spacing: 1px; }
+
+  .auth-container {
+    background: white;
+    padding: 35px 40px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .auth-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  .auth-container h2 {
+    margin-bottom: 20px;
+    color: #4e342e;
+  }
+
+  form { display: flex; flex-direction: column; gap: 15px; }
+
+  label {
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    color: #5d4037;
+  }
+
+  input {
+    padding: 12px;
+    border: 1px solid #c7b7ad;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s, box-shadow 0.3s;
+  }
+  input:focus {
+    border-color: #8d6e63;
+    box-shadow: 0 0 6px rgba(141,110,99,0.3);
+  }
+
+  button {
+    background-color: #6d4c41;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.3s, transform 0.2s;
+  }
+  button:hover {
+    background-color: #8d6e63;
+    transform: scale(1.03);
+  }
+
+  p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4e342e;
+  }
+  a {
+    color: #8d6e63;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  a:hover { text-decoration: underline; }
+
+  #login-message {
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 18px;
+    font-weight: 500;
+    color: red;
+  }
+
+  @media(max-width: 480px){
+    .auth-container { padding: 25px 20px; }
+    .navbar h1 { font-size: 22px; }
+    input, button { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <h1>CafeTrack</h1>
+</div>
+
+<div class="auth-container">
+  <h2>Login</h2>
+  <form method="POST">
+    <label for="user-email">Email</label>
+    <input type="email" placeholder="Enter email" id="user-email" name="user-email" required>
+
+    <label for="user-pass">Password</label>
+    <input type="password" placeholder="Enter password" id="user-pass" name="user-pass" required>
+
+    <button type="submit">Log In</button>
+  </form>
+
+  <p><a onclick="forgotPassword()">Forgot password?</a></p>
+  <p>Don’t have an account? <a href="register.php">Register</a></p>
+  <p id="login-message"><?php echo htmlspecialchars($login_message); ?></p>
+</div>
+
+<script>
+function userLogin() {
+  const email = document.getElementById("user-email").value.trim();
+  const pass = document.getElementById("user-pass").value.trim();
+  const message = document.getElementById("login-message");
+
+  const savedEmail = localStorage.getItem("staffEmail");
+  const savedPass = localStorage.getItem("staffPassword");
+
+  if(email === savedEmail && pass === savedPass){
+    message.style.color = "green";
+    message.textContent = "✅ Login successful! Redirecting...";
+  setTimeout(() => window.location.href = "welcome.php", 1200);
+  } else {
+    message.style.color = "red";
+    message.textContent = "⚠️ Invalid email or password.";
+  }
+
+  return false; // Prevent form reload
+}
+
+function forgotPassword() {
+  const email = prompt("Enter your registered email to reset password:");
+  if (!email) return;
+
+  const savedEmail = localStorage.getItem("staffEmail");
+
+  if(email.trim() === savedEmail) {
+    let newPass = prompt("Enter your new password:");
+    if (!newPass) {
+      alert("Password reset cancelled.");
+      return;
+    }
+    localStorage.setItem("staffPassword", newPass);
+    alert("✅ Password has been reset successfully!");
+  } else {
+    alert("❌ Email not found. Please check and try again.");
+  }
+}
+</script>
+
+</body>
+</html>

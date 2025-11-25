@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeTrack - Inventory</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  /* === General Reset === */
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; transition: all 0.3s ease; }
+
+  body { background-color: #f8f5f0; color: #3e2723; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* === Navbar === */
+  .navbar { background-color: #5d4037; color: white; text-align: center; padding: 18px 0; font-size: 26px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100; }
+
+  /* === Container === */
+  .inventory-container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px 25px;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  .inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .inventory-header h2 {
+    color: #4a2c2a;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .add-btn {
+    background-color: #5d4037;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  .add-btn:hover { background-color: #795548; transform: scale(1.05); }
+
+  .search-box { margin-bottom: 20px; }
+  .search-box input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+  }
+  .search-box input:focus { border-color: #5d4037; box-shadow: 0 0 5px rgba(93,64,55,0.5); }
+
+  .table-wrapper { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  th, td { text-align: left; padding: 14px 15px; vertical-align: middle; }
+  th { background-color: #5d4037; color: white; font-weight: 600; }
+  tr:nth-child(even) { background-color: #f4f4f4; }
+  tr:hover { background-color: #f1ebe9; transition: background 0.3s ease; }
+
+  .item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin-right: 10px; vertical-align: middle; }
+
+  .status { padding: 5px 14px; border-radius: 12px; font-weight: 500; color: white; font-size: 14px; }
+  .in-stock { background-color: #28a745; }
+  .low-stock { background-color: #ffc107; color: #333; }
+  .out-stock { background-color: #dc3545; }
+
+  .action-buttons button {
+    border: none;
+    padding: 6px 14px;
+    margin: 0 3px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .edit-btn { background-color: #17a2b8; color: white; }
+  .edit-btn:hover { background-color: #138496; transform: scale(1.05); }
+  .delete-btn { background-color: #dc3545; color: white; }
+  .delete-btn:hover { background-color: #b02a37; transform: scale(1.05); }
+
+  /* === Modal === */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 99;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .modal.show { display: flex; opacity: 1; }
+
+  .modal-content {
+    background: white;
+    padding: 30px 25px;
+    border-radius: 18px;
+    width: 90%; max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transform: scale(0.8);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .modal.show .modal-content { transform: scale(1); opacity: 1; }
+
+  .modal-content h3 { text-align: center; color: #5d4037; margin-bottom: 20px; font-size: 20px; font-weight: 600; }
+  .modal-content input, .modal-content select {
+    width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; outline: none;
+  }
+  .modal-content input:focus, .modal-content select:focus { border-color: #5d4037; box-shadow: 0 0 5px rgba(93,64,55,0.5); }
+
+  .modal-content button {
+    margin-top: 12px;
+    width: 100%;
+    background-color: #5d4037;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  .modal-content button:hover { background-color: #795548; transform: scale(1.03); }
+  .close-btn { background-color: #b71c1c !important; }
+  .close-btn:hover { background-color: #d32f2f !important; }
+
+  #previewImg { width: 120px; height: 120px; margin: 10px 0; border-radius: 8px; object-fit: cover; display: none; }
+
+  @media (max-width:768px){
+    .inventory-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .inventory-header h2 { font-size: 22px; }
+  }
+
+  @media (max-width:500px){
+    table { min-width: 100%; }
+    .item-img { width: 40px; height: 40px; }
+    #previewImg { width: 100px; height: 100px; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="navbar">CafeTrack Inventory</div>
+
+<div class="inventory-container">
+  <div class="inventory-header">
+    <h2>📦 Inventory</h2>
+    <button class="add-btn" onclick="openModal('add')">+ Add Item</button>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 Search item..." onkeyup="searchTable()">
+  </div>
+
+  <div class="table-wrapper">
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Item</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Item Modal -->
+<div class="modal" id="itemModal" onclick="if(event.target==this) closeModal()">
+  <div class="modal-content">
+    <h3 id="modalTitle">Add New Item</h3>
+    <input type="text" id="itemName" placeholder="Item Name" required>
+    <select id="itemCategory" required>
+      <option value="">Select Category</option>
+      <option value="coffee">Coffee</option>
+      <option value="milktea">MilkTea</option>
+      <option value="fruittea">Fruit Tea</option>
+    </select>
+    <input type="number" id="itemStock" placeholder="Stock Quantity" min="0" required>
+    <input type="number" id="itemPrice" placeholder="Price (₱)" min="0" step="0.01" required>
+    <input type="file" id="itemImageFile" accept="image/*">
+    <img id="previewImg" src="" alt="Preview">
+    <button id="saveBtn" onclick="saveItem()">Save</button>
+    <button class="close-btn" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+let inventory = JSON.parse(localStorage.getItem("inventoryData")) || [];
+let products = JSON.parse(localStorage.getItem("products")) || { coffee: [], milktea: [], fruittea: [] };
+let editIndex = null;
+
+function saveInventory() { localStorage.setItem("inventoryData", JSON.stringify(inventory)); }
+function saveProducts() { localStorage.setItem("products", JSON.stringify(products)); }
+
+function renderTable() {
+  const tbody = document.querySelector("#inventoryTable tbody");
+  tbody.innerHTML = "";
+  inventory.forEach((item,index)=>{
+    const statusClass = item.stock===0 ? "out-stock" : item.stock<5 ? "low-stock" : "in-stock";
+    tbody.innerHTML += `
+      <tr>
+        <td>${item.id}</td>
+        <td><img src="${item.img}" class="item-img" alt="${item.name}">${item.name}</td>
+        <td>${item.category}</td>
+        <td><span class="status ${statusClass}">${item.stock}</span></td>
+        <td>₱${item.price.toFixed(2)}</td>
+        <td class="action-buttons">
+          <button class="edit-btn" onclick="openModal('edit',${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteItem(${index})">Delete</button>
+        </td>
+      </tr>`;
+  });
+}
+
+function searchTable() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll("#inventoryTable tbody tr").forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none";
+  });
+}
+
+function openModal(mode,index=null){
+  const modal = document.getElementById("itemModal");
+  modal.classList.add('show');
+  editIndex = null;
+  if(mode==='edit' && index!==null){
+    const item = inventory[index];
+    editIndex = index;
+    document.getElementById("modalTitle").textContent = "Edit Item";
+    document.getElementById("itemName").value = item.name;
+    document.getElementById("itemCategory").value = item.category;
+    document.getElementById("itemStock").value = item.stock;
+    document.getElementById("itemPrice").value = item.price;
+    document.getElementById("previewImg").src = item.img;
+    document.getElementById("previewImg").style.display = "block";
+  } else {
+    document.getElementById("modalTitle").textContent = "Add New Item";
+  }
+}
+
+function closeModal(){
+  const modal = document.getElementById("itemModal");
+  modal.classList.remove('show');
+  ["itemName","itemCategory","itemStock","itemPrice","itemImageFile"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("previewImg").style.display="none";
+}
+
+document.getElementById("itemImageFile").addEventListener("change", function(event){
+  const file = event.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById("previewImg").src = e.target.result;
+      document.getElementById("previewImg").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+function saveItem(){
+  const name = document.getElementById("itemName").value.trim();
+  const category = document.getElementById("itemCategory").value;
+  const stock = parseInt(document.getElementById("itemStock").value);
+  const imgSrc = document.getElementById("previewImg").src;
+  const price = parseFloat(document.getElementById("itemPrice").value);
+
+  if(!name || !category || isNaN(stock) || isNaN(price) || !imgSrc){
+    alert("Please fill all fields and select an image");
+    return;
+  }
+
+  if(editIndex !== null){
+    const oldItem = inventory[editIndex];
+    inventory[editIndex] = { ...oldItem, name, category, stock, price, img: imgSrc };
+    if(products[category]){
+      const prodIndex = products[category].findIndex(p=>p.name===oldItem.name);
+      if(prodIndex>-1) products[category][prodIndex] = { name, price, img: imgSrc, stock };
+    }
+  } else {
+    const id = inventory.length>0 ? inventory[inventory.length-1].id+1 : 1;
+    inventory.push({id,name,category,stock,price,img:imgSrc});
+    if(!products[category]) products[category]=[];
+    products[category].push({name,price,img:imgSrc,stock});
+  }
+
+  saveInventory(); saveProducts(); renderTable(); closeModal();
+}
+
+function deleteItem(index){
+  if(confirm(`Delete ${inventory[index].name}?`)){
+    const item = inventory[index];
+    inventory.splice(index,1);
+    if(products[item.category]){
+      const prodIndex = products[item.category].findIndex(p=>p.name===item.name);
+      if(prodIndex>-1) products[item.category].splice(prodIndex,1);
+    }
+    saveInventory(); saveProducts(); renderTable();
+  }
+}
+
+window.onload = ()=>{ renderTable(); };
+</script>
+
+</body>
+</html>
